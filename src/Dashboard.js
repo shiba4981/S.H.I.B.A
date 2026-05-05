@@ -134,7 +134,7 @@ export default function Dashboard({ user }) {
   const [playError, setPlayError] = useState(false);
 
   const [logs, setLogs] = useState([]);
-  const [latency, setLatency] = useState(0);
+  const [latency] = useState(0);
   
   const [clips, setClips] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
