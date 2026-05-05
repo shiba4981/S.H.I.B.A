@@ -1,72 +1,59 @@
-# Getting Started with Create React App
+# 📱 Remote Monitor & Fleet Manager
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack Remote Device Management (MDM) and monitoring system. This project allows you to securely track, view, and control an Android device remotely from a web browser with near-zero latency. 
 
-## Available Scripts
+It uses **Firebase Realtime Database** for signaling and state management, and **WebRTC** for direct peer-to-peer video streaming and remote control data channels.
 
-In the project directory, you can run:
+![Project Banner/Screenshot Placeholder](https://via.placeholder.com/1000x400?text=Dashboard+Screenshot+Here)
 
-### `npm start`
+## ✨ Key Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+*   **⚡ Ultra-Low Latency Streaming:** Live WebRTC video feed from the target device's Front Camera, Rear Camera, or Screen.
+*   **🕹️ Remote Control:** Full remote access to the Android device. Simulate taps, swipes, text typing, and zooming directly from the web dashboard via WebRTC Data Channels and Android Accessibility Services.
+*   **🌍 Live Fleet Tracking:** Real-time GPS location tracking with speed, altitude, and accuracy indicators, rendered on an interactive Leaflet map.
+*   **🔋 Device Telemetry:** Live battery monitoring and strict "Ghost Device" (Online/Offline) detection using continuous heartbeat pings.
+*   **🔐 Secure Pairing:** Link new devices securely by scanning an auto-generated QR code from the admin dashboard.
+*   **📹 Session Recording:** Record 10-second clips of the live stream directly to your local browser.
+*   **🛡️ Stealth/Background Operation:** Runs as a persistent Android foreground service, surviving app closures and deep sleep (Doze mode).
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🛠️ Tech Stack
 
-### `npm test`
+**Web Dashboard (Frontend)**
+*   React.js
+*   WebRTC API (Video & Data Channels)
+*   Firebase Realtime Database (Signaling & Telemetry)
+*   Leaflet & React-Leaflet (Mapping)
+*   QR Code React (Device Pairing)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+**Android Client (Target Device)**
+*   Java / Android SDK
+*   Native WebRTC (Hardware Accelerated Video/Audio Pipelines)
+*   Firebase SDK
+*   FusedLocationProvider (Google Play Services)
+*   Android AccessibilityService (For remote touch injection)
+*   MediaProjection API (For screen capturing)
 
-### `npm run build`
+## 🏗️ Architecture
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1.  **Signaling:** The React dashboard and Android device exchange WebRTC SDP Offers/Answers and ICE Candidates via a shared Firebase Realtime Database node.
+2.  **P2P Tunnel:** Once signaling is complete, a direct WebRTC tunnel is established. 
+3.  **NAT Traversal:** If devices are behind strict firewalls, network traffic is routed through **Metered.ca TURN servers**.
+4.  **Control Loop:** User interactions on the React video player are translated into JSON commands, sent through the WebRTC Data Channel, and executed on the Android device via a custom Accessibility Service.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🚀 Installation & Setup
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-
-# S.H.I.B.A
+### 1. Firebase Configuration
+1. Create a project in [Firebase Console](https://console.firebase.google.com/).
+2. Enable **Authentication** (Email/Password) and **Realtime Database**.
+3. Set your Realtime Database rules:
+```json
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    }
+  }
+}
