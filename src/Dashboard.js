@@ -451,11 +451,16 @@ export default function Dashboard({ user }) {
 
     // Step B: Send the WebRTC Offer via Firebase
     setTimeout(async () => {
-      const offer = await pc.createOffer({ offerToReceiveVideo: true, offerToReceiveAudio: true });
-      await pc.setLocalDescription(offer);
-      
-      await set(ref(db, `${devicePath}/webrtc/offer`), { type: offer.type, sdp: offer.sdp });
-      addLog("Signaling: Offer sent to phone via Firebase.");
+      try {
+        // --- SET offerToReceiveAudio to FALSE ---
+        const offer = await pc.createOffer({ offerToReceiveVideo: true, offerToReceiveAudio: false });
+        await pc.setLocalDescription(offer);
+        
+        await set(ref(db, `${devicePath}/webrtc/offer`), { type: offer.type, sdp: offer.sdp });
+        addLog("Signaling: Video-Only Offer sent to phone.");
+      } catch (err) {
+        addLog(`❌ Create Offer Error: ${err.message}`);
+      }
     }, 1500);
 
     // 6. Handle Outgoing ICE Candidates
@@ -748,7 +753,7 @@ export default function Dashboard({ user }) {
             <div style={{ color: '#a1a1aa', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ color: '#fff', fontWeight: '800', fontSize: '1.1rem', letterSpacing: '-0.3px' }}>{user.email.split('@')[0]}</span>
-                <span style={{ display: 'flex', alignItems: 'center', fontSize: '0.75rem', marginTop: '2px' }}><span className="status-dot" style={{height: '6px', width: '6px'}}></span> System Active</span>
+                <span style={{ display: 'flex', alignItems: 'center', fontSize: '0.75rem', marginTop: '2px' }}><span className="status-dot" style={{height: '6px', width: '6px'}}></span> S.H.I.B.A Active</span>
               </div>
             </div>
           </div>
