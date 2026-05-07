@@ -449,6 +449,7 @@ export default function Dashboard({ user }) {
       @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
       .manual-list li { margin-bottom: 12px; line-height: 1.6; }
       .manual-list strong { color: #60a5fa; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     `}</style>
     <div className="app-bg" style={{ display: 'flex', height: '100vh', color: '#f4f4f5', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', overflow: 'hidden' }}>
       
@@ -477,12 +478,15 @@ export default function Dashboard({ user }) {
         <div style={{ marginBottom: '32px' }}>
           <h3 style={{ color: '#a1a1aa', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '16px', marginTop: 0, fontWeight: '700' }}>📱 S.H.I.B.A App QR</h3>
           <button onClick={() => setShowAppQR(!showAppQR)} style={{ width: '100%', padding: '12px', background: showAppQR ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent', color: showAppQR ? '#fff' : '#10b981', border: showAppQR ? 'none' : '1px dashed #10b981', borderRadius: '14px', marginBottom: '12px', fontWeight: '600', cursor: 'pointer' }}>
-            {showAppQR ? 'Hide App QR' : 'Show App QR'}
+            {showAppQR ? 'Hide App Link' : 'Get The App'}
           </button>
           {showAppQR && (
-            <div style={{ padding: '24px', backgroundColor: '#fff', borderRadius: '16px', textAlign: 'center', animation: 'fadeIn 0.3s ease' }}>
+            <div style={{ padding: '24px', backgroundColor: '#fff', borderRadius: '16px', textAlign: 'center', animation: 'fadeIn 0.3s ease forwards' }}>
               <QRCodeCanvas value="https://github.com/shiba4981/S.H.I.B.A/releases/download/v1.0.0/shiba-client-v1.apk" size={180} />
               <p style={{ margin: '15px 0 0 0', fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>Download .APK</p>
+              <a href="https://github.com/shiba4981/S.H.I.B.A/releases/download/v1.0.0/shiba-client-v1.apk" target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: '10px', fontSize: '0.8rem', color: '#3b82f6', textDecoration: 'underline', fontWeight: 'bold' }}>
+                Or click here to download
+              </a>
             </div>
           )}
         </div>
@@ -883,7 +887,7 @@ export default function Dashboard({ user }) {
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <p style={{ margin: '0 0 8px 0', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px', color: '#10b981' }}>2. Get the S.H.I.B.A App</p>
-                  <span style={{ fontSize: '0.9rem', color: '#a1a1aa' }}>Scan with camera to download .apk</span>
+                  <a href="https://github.com/shiba4981/S.H.I.B.A/releases/download/v1.0.0/shiba-client-v1.apk" target="_blank" rel="noreferrer" style={{ fontSize: '0.95rem', color: '#34d399', textDecoration: 'underline', fontWeight: 'bold' }}>Click here or scan to download .apk</a>
                 </div>
               </div>
             </div>
