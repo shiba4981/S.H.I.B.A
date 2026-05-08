@@ -9,6 +9,7 @@ import { signOut } from 'firebase/auth';
 
 const getMarkerIcon = (heading, speed) => {
   const speedNum = parseFloat(speed || 0);
+  
   if (speedNum < 2.5) {
     return L.divIcon({
       className: 'custom-stationary-dot',
@@ -16,6 +17,7 @@ const getMarkerIcon = (heading, speed) => {
       iconSize: [24, 24], iconAnchor: [12, 12], popupAnchor: [0, -12]
     });
   }
+
   if (heading !== null && heading !== undefined && !isNaN(heading) && heading >= 0) {
     return L.divIcon({
       className: 'custom-navigation-arrow',
@@ -413,6 +415,99 @@ export default function Dashboard({ user }) {
   return (
     <>
     <style>{`
+      /* Layout Classes for Responsiveness */
+      .dashboard-wrapper {
+        display: flex;
+        flex-direction: row;
+        height: 100vh;
+        color: #f4f4f5;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        overflow: hidden;
+      }
+      .sidebar {
+        width: 360px;
+        margin: 24px 0 24px 24px;
+        border-radius: 32px;
+        padding: 32px 28px;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        z-index: 10;
+        flex-shrink: 0;
+      }
+      .main-content {
+        flex: 1;
+        padding: 32px 48px;
+        overflow-y: auto;
+      }
+      .status-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        margin-bottom: 36px;
+      }
+      .map-container-wrapper {
+        height: 520px;
+        width: 100%;
+        border-radius: 32px;
+        padding: 12px;
+        margin-bottom: 40px;
+        position: relative;
+        z-index: 0;
+      }
+      .qr-row {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      /* Mobile Breakpoint */
+      @media (max-width: 1024px) {
+        .dashboard-wrapper {
+          flex-direction: column;
+          overflow-y: auto;
+        }
+        .sidebar {
+          width: auto;
+          margin: 16px;
+          padding: 24px 20px;
+          height: auto;
+          flex-shrink: 1;
+          overflow: visible;
+        }
+        .main-content {
+          padding: 16px;
+          overflow: visible;
+        }
+        .status-cards-grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        .map-container-wrapper {
+          height: 400px;
+        }
+        .qr-row {
+          gap: 20px;
+          flex-direction: column;
+          align-items: center;
+        }
+        .video-feed-wrapper {
+          min-height: 350px !important;
+          padding: 20px 0 !important;
+        }
+        .responsive-title {
+          font-size: 2rem !important;
+          flex-direction: column;
+          align-items: flex-start !important;
+          gap: 8px !important;
+        }
+        .video-row-wrapper {
+          flex-direction: column !important;
+        }
+      }
+
+      /* Reusable Components */
       .app-bg { background-color: #030305; background-image: radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.15), transparent 40%), radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.1), transparent 40%); }
       .glass-panel { background: rgba(15, 15, 17, 0.6); backdrop-filter: blur(32px); border: 1px solid rgba(255, 255, 255, 0.06); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.08); }
       .device-card { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border-left: 4px solid transparent !important; }
@@ -451,17 +546,18 @@ export default function Dashboard({ user }) {
       .manual-list strong { color: #60a5fa; }
       @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     `}</style>
-    <div className="app-bg" style={{ display: 'flex', height: '100vh', color: '#f4f4f5', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', overflow: 'hidden' }}>
+
+    <div className="app-bg dashboard-wrapper">
       
       {/* Sidebar */}
-      <div className="glass-panel log-scroll" style={{ width: '360px', margin: '24px 0 24px 24px', borderRadius: '32px', padding: '32px 28px', display: 'flex', flexDirection: 'column', overflowY: 'auto', zIndex: 10 }}>
+      <div className="glass-panel log-scroll sidebar">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', border: '2px solid rgba(255,255,255,0.2)', boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)' }}>🛡️</div>
             <div style={{ color: '#a1a1aa', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ color: '#fff', fontWeight: '800', fontSize: '1.1rem', letterSpacing: '-0.3px' }}>{user.email.split('@')[0]}</span>
-                <span style={{ display: 'flex', alignItems: 'center', fontSize: '0.75rem', marginTop: '2px' }}><span className="status-dot" style={{height: '6px', width: '6px'}}></span> S.H.I.B.A Active</span>
+                <span style={{ display: 'flex', alignItems: 'center', fontSize: '0.75rem', marginTop: '2px' }}><span className="status-dot"></span> S.H.I.B.A Active</span>
               </div>
             </div>
           </div>
@@ -555,11 +651,11 @@ export default function Dashboard({ user }) {
       </div>
 
       {/* Main Content Area */}
-      <div className="log-scroll tech-grid" style={{ flex: 1, padding: '32px 48px', overflowY: 'auto' }}>
+      <div className="log-scroll tech-grid main-content">
         
         {showManual ? (
           <div className="animate-slide-up" style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '40px' }}>
-            <h1 style={{ color: '#f4f4f5', margin: '0 0 24px 0', fontSize: '2.8rem', display: 'flex', alignItems: 'center', gap: '16px', fontWeight: '900', letterSpacing: '-1px' }}>
+            <h1 className="responsive-title" style={{ color: '#f4f4f5', margin: '0 0 24px 0', fontSize: '2.8rem', display: 'flex', alignItems: 'center', gap: '16px', fontWeight: '900', letterSpacing: '-1px' }}>
               📖 <span className="gradient-text">S.H.I.B.A User Manual</span>
             </h1>
             
@@ -605,15 +701,15 @@ export default function Dashboard({ user }) {
 
         ) : showGlobalMap ? (
           <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div className="animate-slide-up" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h1 style={{ color: '#f4f4f5', margin: 0, fontSize: '2.8rem', display: 'flex', alignItems: 'center', gap: '16px', fontWeight: '900', letterSpacing: '-1px' }}>
+            <div className="animate-slide-up" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+              <h1 className="responsive-title" style={{ color: '#f4f4f5', margin: 0, fontSize: '2.8rem', display: 'flex', alignItems: 'center', gap: '16px', fontWeight: '900', letterSpacing: '-1px' }}>
                 🌍 <span className="gradient-text">Fleet Map</span>
               </h1>
               <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '8px 16px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#34d399', fontWeight: '800', letterSpacing: '1px', fontSize: '0.85rem' }}>
                 <span className="status-dot" style={{ margin: 0 }}></span> {Object.keys(devices).length} NODES ONLINE
               </div>
             </div>
-            <div className="glass-panel animate-slide-up delay-1" style={{ flex: 1, borderRadius: '32px', padding: '12px', position: 'relative', zIndex: 0, minHeight: '500px' }}>
+            <div className="glass-panel animate-slide-up delay-1 map-container-wrapper">
               <div style={{ height: '100%', width: '100%', borderRadius: '20px', overflow: 'hidden', position: 'relative' }}>
                 <MapContainer center={[20.2961, 85.8245]} zoom={2} maxZoom={30} style={{ height: '100%', width: '100%' }}>
                   <GlobalMapBounds devices={devices} />
@@ -648,8 +744,8 @@ export default function Dashboard({ user }) {
           </div>
         ) : selectedDevice ? (
           <div style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '40px' }}>
-            <div className="animate-slide-up" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '36px' }}>
-              <h1 style={{ color: '#f4f4f5', margin: 0, fontSize: '2.8rem', display: 'flex', alignItems: 'center', gap: '16px', fontWeight: '900', letterSpacing: '-1px' }}>
+            <div className="animate-slide-up" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '36px', flexWrap: 'wrap', gap: '16px' }}>
+              <h1 className="responsive-title" style={{ color: '#f4f4f5', margin: 0, fontSize: '2.8rem', display: 'flex', alignItems: 'center', gap: '16px', fontWeight: '900', letterSpacing: '-1px' }}>
                 📡 <span className="gradient-text">{activeDevice ? (devices[activeDevice]?.name || activeDevice) : 'No Device'}</span>
               </h1>
               <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '8px 16px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#34d399', fontWeight: '800', letterSpacing: '1px', fontSize: '0.85rem', boxShadow: '0 0 20px rgba(16,185,129,0.2)' }}>
@@ -657,7 +753,7 @@ export default function Dashboard({ user }) {
               </div>
             </div>
 
-            <div className="animate-slide-up delay-1" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '36px' }}>
+            <div className="animate-slide-up delay-1 status-cards-grid">
               <div className="glass-panel" style={cardStyle}>
                 <div className="card-watermark">🔋</div>
                 <div style={{ color: '#a1a1aa', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '12px', fontWeight: '800' }}>Battery Level</div>
@@ -687,7 +783,7 @@ export default function Dashboard({ user }) {
               </div>
             </div>
 
-            <div className="glass-panel animate-slide-up delay-3" style={{ height: '520px', width: '100%', borderRadius: '32px', padding: '12px', marginBottom: '40px', position: 'relative', zIndex: 0 }}>
+            <div className="glass-panel animate-slide-up delay-3 map-container-wrapper">
               <div style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 400, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px', pointerEvents: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
                 <span className="status-dot"></span> <span style={{ color: '#fff', fontSize: '0.8rem', fontWeight: '800', letterSpacing: '1px' }}>GPS ACTIVE</span>
               </div>
@@ -753,23 +849,23 @@ export default function Dashboard({ user }) {
                </div>
             </div>
 
-            <div className="animate-slide-up delay-4" style={{ display: 'flex', flexDirection: peerConnection && activeStreamMode === 'screen' ? 'row' : 'column', gap: '24px', alignItems: 'stretch' }}>
+            <div className="animate-slide-up delay-4 video-row-wrapper" style={{ display: 'flex', flexDirection: peerConnection && activeStreamMode === 'screen' ? 'row' : 'column', gap: '24px', alignItems: 'stretch' }}>
               
               {peerConnection && (
                 <div className="glass-panel" style={{ flex: activeStreamMode === 'screen' ? '0 0 auto' : '1 1 auto', minWidth: activeStreamMode === 'screen' ? '380px' : '100%', borderRadius: '32px', overflow: 'hidden', border: '1px solid rgba(239, 68, 68, 0.4)', boxShadow: '0 20px 50px rgba(239, 68, 68, 0.15)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.4)', padding: '20px 32px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.4)', padding: '20px 32px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', flexWrap: 'wrap', gap: '10px' }}>
                     <h3 style={{ color: '#fca5a5', margin: 0, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '10px' }}><span className="recording-dot" style={{boxShadow: '0 0 15px rgba(239, 68, 68, 0.8)'}}></span> LIVE CCTV <span style={{ opacity: 0.7, fontSize: '0.9rem', fontWeight: 'normal' }}>({remoteStream ? 'Connected' : 'Connecting...'})</span></h3>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button className="btn-hover" onClick={() => handleResync(peerConnection)} style={{ padding: '10px 20px', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '10px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold' }}>🔄 Re-Sync</button>
                 <button className="btn-hover" onClick={stopLiveStream} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #ef4444, #b91c1c)', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold' }}>🛑 Stop</button>
               </div>
                   </div>
-            <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', padding: '8px 32px', display: 'flex', gap: '24px', fontSize: '0.8rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', color: '#a1a1aa' }}>
+            <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', padding: '8px 32px', display: 'flex', gap: '24px', flexWrap: 'wrap', fontSize: '0.8rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', color: '#a1a1aa' }}>
                 <span>Signaling: <strong style={{ color: sigState === 'connected' ? '#10b981' : '#fbbf24' }}>{sigState.toUpperCase()}</strong></span>
                 <span>ICE State: <strong style={{ color: iceState === 'connected' || iceState === 'completed' ? '#10b981' : iceState === 'failed' ? '#ef4444' : '#fbbf24' }}>{iceState.toUpperCase()}</strong></span>
                 <span>Connection: <strong style={{ color: connState === 'connected' ? '#10b981' : connState === 'failed' ? '#ef4444' : '#fbbf24' }}>{connState.toUpperCase()}</strong></span>
             </div>
-                  <div style={{ position: 'relative', width: '100%', minHeight: '600px', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
+                  <div className="video-feed-wrapper" style={{ position: 'relative', width: '100%', minHeight: '600px', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
                     <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', padding: '10px 14px', borderRadius: '8px', fontSize: '0.75rem', color: '#34d399', border: '1px solid #059669', zIndex: 10, fontFamily: 'monospace', pointerEvents: 'none' }}>
                       <div>📡 LATENCY: {latency}ms</div>
                       <div>📺 {videoRef.current?.videoWidth || 0}x{videoRef.current?.videoHeight || 0}</div>
@@ -867,10 +963,10 @@ export default function Dashboard({ user }) {
         ) : (
           <div className="empty-glow animate-slide-up" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#a1a1aa' }}>
             <div className="float-anim" style={{ fontSize: '6.5rem', marginBottom: '24px', filter: 'drop-shadow(0 20px 30px rgba(59, 130, 246, 0.5))' }}>🛰️</div>
-            <h2 style={{ color: '#fff', marginBottom: '16px', fontSize: '2.4rem', fontWeight: '700', letterSpacing: '-0.5px' }}>Waiting for Target</h2>
+            <h2 className="responsive-title" style={{ color: '#fff', marginBottom: '16px', fontSize: '2.4rem', fontWeight: '700', letterSpacing: '-0.5px' }}>Waiting for Target</h2>
             <p style={{ fontSize: '1.15rem', marginBottom: '40px', color: '#a1a1aa', maxWidth: '450px', textAlign: 'center', lineHeight: '1.6' }}>Select a device from the sidebar or scan the QR code below to establish a secure connection.</p>
             
-            <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div className="qr-row">
               <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px', borderRadius: '32px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
                 <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', marginBottom: '20px' }}>
                   <QRCodeCanvas value={user.uid} size={180} />
